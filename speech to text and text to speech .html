@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech & Speech to Text</title>
+    <!-- Updated Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-dymI1VoRFDxfyNHQC8XK/eD/kf5Sbfg6xQ4qD4Jc3X2DaPjzJuz5BPW+lsBXn0vOs/HB5BEHuxISj3BHE45Gdg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: url('IMG_20240731_165706_563.jpg') no-repeat center center/cover;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1); /* Translucent white background */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px); /* Blur effect for enhanced readability */
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: none;
+        }
+
+        select {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #00c6ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #007acc;
+            transform: scale(1.05);
+        }
+
+        p {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .icon {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-microphone icon"></i> Text to Speech & Speech to Text</h1>
+        <textarea id="textInput" placeholder="Type text here..."></textarea>
+        <select id="voiceSelect">
+            <option value="">Select Voice</option>
+        </select>
+        <button onclick="convertTextToSpeech()">
+            <i class="fas fa-exchange-alt"></i> Convert Text to Speech
+        </button>
+        <button onclick="startSpeechToText()">
+            <i class="fas fa-record-vinyl"></i> Convert Speech to Text
+        </button>
+        <p id="speechOutput"></p>
+    </div>
+
+    <script>
+        let voices = [];
+
+        // Populate the dropdown with available voices
+        function populateVoiceList() {
+            voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '<option value="">Select Voice</option>'; // Reset dropdown
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang}) ${voice.default ? '[default]' : ''}`;
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        // Refresh voices list when they change
+        window.speechSynthesis.onvoiceschanged = populateVoiceList;
+
+        function convertTextToSpeech() {
+            const text = document.getElementById('textInput').value;
+            const voiceSelect = document.getElementById('voiceSelect');
+            const speech = new SpeechSynthesisUtterance(text);
+
+            // Set the selected voice
+            const selectedVoice = voiceSelect.value;
+            if (selectedVoice) {
+                speech.voice = voices[selectedVoice];
+            }
+
+            window.speechSynthesis.speak(speech);
+        }
+
+        function startSpeechToText() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function () {
+                alert('Voice recognition started. Speak into the microphone.');
+            };
+
+            recognition.onspeechend = function () {
+                recognition.stop();
+            };
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('speechOutput').innerText = `You said: "${transcript}"`;
+            };
+
+            recognition.onerror = function (event) {
+                alert('Error occurred in recognition: ' + event.error);
+            };
+
+            recognition.start();
+        }
+
+        // Populate voice list when the page loads
+        window.onload = populateVoiceList;
+    </script>
+</body>
+</html>
